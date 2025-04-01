@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SqlPerformanceAiAdvisor.Service
@@ -14,13 +15,18 @@ namespace SqlPerformanceAiAdvisor.Service
     public class OllamaAiService : IAiService
     {
         // Use a static HttpClient for performance and resource management
+        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        // Semaphore to ensure only one request is dispatched at a time
         private static readonly HttpClient _httpClient = new HttpClient();
         private readonly string _ollamaApiUrl = "http://10.1.10.84:11434/api/generate"; // Your Ollama server URL
-        private readonly string _modelName = "phi3:mini"; // Or choose another model like llama3, codellama, etc.
+        private readonly string _modelName = "gemma3:12b"; // Or choose another model like llama3, codellama, etc.
 
         public async Task<string> GetQueryOptimizationRecommendationAsync(string sqlQuery, string? executionPlanXml)
         {
-            Console.WriteLine($"Ollama Service: Requesting recommendation for query using model '{_modelName}'...");
+            await _semaphore.WaitAsync();
+            try
+            {
+                Console.WriteLine($"Ollama Service: Requesting recommendation for query using model '{_modelName}'...");
 
             // Construct a detailed prompt for better recommendations
             var promptBuilder = new StringBuilder();
@@ -139,6 +145,11 @@ namespace SqlPerformanceAiAdvisor.Service
             {
                 Console.WriteLine($"Ollama Service: Unexpected error - {ex.Message}");
                 return $"Unexpected Error: {ex.Message}";
+            }
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 

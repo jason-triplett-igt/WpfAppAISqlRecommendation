@@ -80,26 +80,48 @@
         </StackPanel>
 
         <DataGrid Grid.Row="2"
-                  ItemsSource="{Binding TopQueries}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  CanUserAddRows="False"
-                  SelectionMode="Single"
-                  GridLinesVisibility="All"
-                  HeadersVisibility="Column">
+          ItemsSource="{Binding TopQueries}"
+          AutoGenerateColumns="False"
+          IsReadOnly="True"
+          CanUserAddRows="False"
+          SelectionMode="Single"
+          GridLinesVisibility="All"
+          HeadersVisibility="Column">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="CPU (ms)" Binding="{Binding TotalCpuTime, StringFormat={}{0:N0}}" Width="Auto" SortDirection="Descending"/>
                 <DataGridTextColumn Header="Reads" Binding="{Binding TotalLogicalReads, StringFormat={}{0:N0}}" Width="Auto"/>
                 <DataGridTextColumn Header="Duration (ms)" Binding="{Binding TotalDuration, StringFormat={}{0:N0}}" Width="Auto"/>
                 <DataGridTextColumn Header="Exec Count" Binding="{Binding ExecutionCount, StringFormat={}{0:N0}}" Width="Auto"/>
                 <DataGridTextColumn Header="Query Text" Binding="{Binding QueryText}" Width="3*"/>
-                <DataGridTextColumn Header="AI Recommendation" Binding="{Binding Recommendation}" Width="2*">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="TextWrapping" Value="Wrap"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
+                <DataGridTemplateColumn Header="AI Recommendation" Width="2*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Content="View Recommendation"
+                                        Command="{Binding ViewRecommendationCommand}"
+                                        IsEnabled="{Binding IsRecommendationReady}"
+                                        Padding="5,2" Margin="0,0,5,0"/>
+                                <Button Content="Retry" 
+                                        Command="{Binding RetryCommand}" 
+                                        Padding="5,2" 
+                                        MinWidth="60"
+                                        Margin="5,0,0,0"
+                                        IsEnabled="{Binding IsRetrying, Converter={StaticResource InverseBooleanConverter}}">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsRetrying}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
 

@@ -86,8 +86,49 @@ namespace SqlPerformanceAiAdvisor
         {
             _aiService = new OllamaAiService(); // Use the Ollama service
             AnalyzeCommand = new AsyncRelayCommand<object>(AnalyzeAsync, CanAnalyze);
-        }
 
+            // Subscribe to collection changes to attach the RetryCommand to new items
+            TopQueries.CollectionChanged += (sender, e) =>
+            {
+                if (e.NewItems != null)
+                {
+                    foreach (QueryInfo queryInfo in e.NewItems)
+                    {
+                        queryInfo.RetryCommand = new AsyncRelayCommand<object>(
+                            async _ => await RetryRecommendationAsync(queryInfo),
+                            _ => !queryInfo.IsRetrying
+                        );
+                    }
+                }
+            };
+        }
+        private async Task RetryRecommendationAsync(QueryInfo queryInfo)
+        {
+            if (queryInfo == null) return;
+
+            try
+            {
+                queryInfo.IsRetrying = true;
+                queryInfo.Recommendation = "Retrying...";
+
+                // Get a new AI recommendation
+                string recommendation = await _aiService.GetQueryOptimizationRecommendationAsync(
+                    queryInfo.QueryText,
+                    queryInfo.ExecutionPlanXml);
+
+                queryInfo.Recommendation = recommendation;
+                StatusMessage = "Recommendation refreshed successfully.";
+            }
+            catch (Exception ex)
+            {
+                queryInfo.Recommendation = $"Error getting AI recommendation: {ex.Message}";
+                StatusMessage = $"Error refreshing recommendation: {ex.Message}";
+            }
+            finally
+            {
+                queryInfo.IsRetrying = false;
+            }
+        }
         private bool CanAnalyze(object? parameter)
         {
             // Basic validation
@@ -364,6 +405,8 @@ namespace SqlPerformanceAiAdvisor
             }
         }
         public void RaiseCanExecuteChanged() => CommandManager.InvalidateRequerySuggested(); // Helper
+                                                                                             // Add this method to the MainViewModel class
+      
     }
 
 }

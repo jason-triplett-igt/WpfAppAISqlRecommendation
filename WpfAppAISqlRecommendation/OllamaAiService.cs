@@ -18,7 +18,7 @@ namespace SqlPerformanceAiAdvisor.Service
         private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         // Semaphore to ensure only one request is dispatched at a time
         private static readonly HttpClient _httpClient = new HttpClient();
-        private readonly string _ollamaApiUrl = "http://10.1.10.84:11434/api/generate"; // Your Ollama server URL
+        private readonly string _ollamaApiUrl = "http://10.1.10.65:11434/api/generate"; // Your Ollama server URL
         private readonly string _modelName = "gemma3:12b"; // Or choose another model like llama3, codellama, etc.
 
         public async Task<string> GetQueryOptimizationRecommendationAsync(string sqlQuery, string? executionPlanXml)

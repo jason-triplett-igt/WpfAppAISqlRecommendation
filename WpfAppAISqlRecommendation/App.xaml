@@ -8,6 +8,8 @@
         <ResourceDictionary>
 
             <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+            <local:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

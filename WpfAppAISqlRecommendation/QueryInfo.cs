@@ -62,6 +62,8 @@ namespace SqlPerformanceAiAdvisor
 
         private ICommand? _viewRecommendationCommand;
         public ICommand ViewRecommendationCommand => _viewRecommendationCommand ??= new RelayCommand(ExecuteViewRecommendation);
+        public ICommand ViewXmlCommand { get; set; }
+
 
         private void ExecuteViewRecommendation(object? parameter)
         {

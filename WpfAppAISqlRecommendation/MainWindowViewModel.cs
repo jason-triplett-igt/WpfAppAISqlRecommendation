@@ -98,9 +98,28 @@ namespace SqlPerformanceAiAdvisor
                             async _ => await RetryRecommendationAsync(queryInfo),
                             _ => !queryInfo.IsRetrying
                         );
+                        queryInfo.ViewXmlCommand = new RelayCommand<object>(
+               _ => ViewXml(queryInfo),
+               _ => !string.IsNullOrEmpty(queryInfo.ExecutionPlanXml)
+           );
                     }
                 }
             };
+        }
+        private void ViewXml(QueryInfo queryInfo)
+        {
+            if (queryInfo == null || string.IsNullOrEmpty(queryInfo.ExecutionPlanXml))
+            {
+                MessageBox.Show("No XML available for this record.", "View XML", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Open a new window to display the XML
+            var xmlWindow = new RecommendationWindow(queryInfo.ExecutionPlanXml)
+            {
+               // RecommendationText = queryInfo.ExecutionPlanXml
+            };
+            xmlWindow.Show();
         }
         private async Task RetryRecommendationAsync(QueryInfo queryInfo)
         {
@@ -194,28 +213,33 @@ namespace SqlPerformanceAiAdvisor
 
                 // Process AI recommendations concurrently (optional, but faster)
                 List<Task> recommendationTasks = new List<Task>();
-                foreach (var queryInfo in queries) // Use the already fetched list
+                foreach (var q in queries)
                 {
-                    recommendationTasks.Add(Task.Run(async () => // Use Task.Run for CPU-bound simulation or actual network call
-                    {
-                        try
-                        {
-                            string recommendation = await _aiService.GetQueryOptimizationRecommendationAsync(queryInfo.QueryText, queryInfo.ExecutionPlanXml);
-                            // Update the UI thread safely
-                            Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                queryInfo.Recommendation = recommendation;
-                            });
-                        }
-                        catch (Exception aiEx)
-                        {
-                            Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                queryInfo.Recommendation = $"Error getting AI recommendation: {aiEx.Message}";
-                            });
-                        }
-                    }));
+                    q.Recommendation = "Please Submit Initial Request";
                 }
+                //this is too slow we should wait for the user to request an individual  recommendation
+                //foreach (var queryInfo in queries) // Use the already fetched list
+                //{
+                //    recommendationTasks.Add(Task.Run(async () => // Use Task.Run for CPU-bound simulation or actual network call
+                //    {
+                //        try
+                //        {
+                //            string recommendation = await _aiService.GetQueryOptimizationRecommendationAsync(queryInfo.QueryText, queryInfo.ExecutionPlanXml);
+                //            // Update the UI thread safely
+                //            Application.Current.Dispatcher.Invoke(() =>
+                //            {
+                //                queryInfo.Recommendation = recommendation;
+                //            });
+                //        }
+                //        catch (Exception aiEx)
+                //        {
+                //            Application.Current.Dispatcher.Invoke(() =>
+                //            {
+                //                queryInfo.Recommendation = $"Error getting AI recommendation: {aiEx.Message}";
+                //            });
+                //        }
+                //    }));
+                //}
 
                 await Task.WhenAll(recommendationTasks); // Wait for all AI calls to complete
 

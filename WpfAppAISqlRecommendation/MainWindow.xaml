@@ -92,6 +92,15 @@
                 <DataGridTextColumn Header="Reads" Binding="{Binding TotalLogicalReads, StringFormat={}{0:N0}}" Width="Auto"/>
                 <DataGridTextColumn Header="Duration (ms)" Binding="{Binding TotalDuration, StringFormat={}{0:N0}}" Width="Auto"/>
                 <DataGridTextColumn Header="Exec Count" Binding="{Binding ExecutionCount, StringFormat={}{0:N0}}" Width="Auto"/>
+                <DataGridTemplateColumn Header="Actions">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="View XML"
+                     Command="{Binding ViewXmlCommand}"
+                     IsEnabled="{Binding ExecutionPlanXml, Converter={StaticResource NullToBooleanConverter}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Query Text" Binding="{Binding QueryText}" Width="3*"/>
                 <DataGridTemplateColumn Header="AI Recommendation" Width="2*">
                     <DataGridTemplateColumn.CellTemplate>

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "WinUIAppSqlRecommendation (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "WinUIAppSqlRecommendation (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
